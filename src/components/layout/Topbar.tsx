@@ -39,7 +39,7 @@ export function Topbar({ title }: { title?: string }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-card/95 px-4 backdrop-blur">
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-64 p-0" closeClassName="text-sidebar-foreground">
           <SheetTitle className="sr-only">Navigation</SheetTitle>

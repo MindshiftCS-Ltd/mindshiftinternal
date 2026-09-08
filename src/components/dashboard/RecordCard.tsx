@@ -33,7 +33,9 @@ export function RecordCard({ id, kind, title, subtitle, meta, status, onView }: 
           <p className="mt-1 text-sm font-semibold">{title}</p>
           {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
         </div>
-        <Badge variant={statusVariant(status)}>{status}</Badge>
+        <Badge variant={statusVariant(status)} dot>
+          {status}
+        </Badge>
       </CardHeader>
       <CardContent>{meta && <p className="text-sm text-muted-foreground">{meta}</p>}</CardContent>
       <CardFooter className="gap-2">

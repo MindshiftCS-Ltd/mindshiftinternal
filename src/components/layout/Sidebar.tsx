@@ -50,7 +50,7 @@ function NavGroup({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => 
           onClick={onNavigate}
           className={({ isActive }) =>
             cn(
-              'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground',
+              'flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground',
               isActive && 'bg-sidebar-accent text-sidebar-accent-foreground',
             )
           }
@@ -67,7 +67,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { isFlm } = useAuth()
 
   return (
-    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+    <div className="flex h-full flex-col rounded-2xl bg-sidebar text-sidebar-foreground">
       <div className="flex items-center gap-2.5 px-4 py-5">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white p-1">
           <img src="/brand/logo-icon.png" alt="Mindshift" className="size-full object-contain" />
@@ -96,8 +96,8 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function Sidebar() {
   return (
-    <aside className="hidden w-64 shrink-0 border-r border-sidebar-border md:block">
-      <div className="sticky top-0 h-screen">
+    <aside className="hidden w-64 shrink-0 md:block">
+      <div className="sticky top-3 h-[calc(100vh-1.5rem)] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_4px_16px_-4px_rgba(16,24,40,0.08)]">
         <SidebarContent />
       </div>
     </aside>
