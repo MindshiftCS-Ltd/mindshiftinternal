@@ -2,9 +2,10 @@ import * as React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { LogoMark, LogoWordmark } from '@/components/brand/Logo'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { isSupabaseConfigured } from '@/lib/supabase'
@@ -43,11 +44,11 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="items-center text-center">
-          <div className="mb-2 flex size-12 items-center justify-center rounded-xl bg-primary text-lg font-bold text-primary-foreground">
-            MS
+          <div className="mb-3 flex size-16 items-center justify-center rounded-2xl border border-border bg-white p-2.5 shadow-sm">
+            <LogoMark className="size-full" />
           </div>
-          <CardTitle className="text-xl">Mindshift Internal</CardTitle>
-          <CardDescription>Operations &amp; Administration Platform</CardDescription>
+          <LogoWordmark className="items-center" />
+          <CardDescription className="mt-1">Operations &amp; Administration Platform</CardDescription>
         </CardHeader>
         <CardContent>
           {!isSupabaseConfigured ? (

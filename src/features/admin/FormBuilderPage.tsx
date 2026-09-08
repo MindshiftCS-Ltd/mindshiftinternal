@@ -1,4 +1,4 @@
-import { GripVertical, Plus, Trash2 } from 'lucide-react'
+import { GripVertical, Loader2, Plus, Trash2 } from 'lucide-react'
 import * as React from 'react'
 import { toast } from 'sonner'
 
@@ -18,75 +18,53 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { cn } from '@/lib/utils'
-import { demoDepartments } from '@/lib/demoData'
+import { useAuth } from '@/features/auth/AuthProvider'
+import { useDepartments } from '@/hooks/useDepartments'
 import { FIELD_TYPE_OPTIONS, fieldTypeLabel } from '@/lib/fieldTypes'
-import type { FieldType } from '@/types/domain'
+import { isSupabaseConfigured, supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+import type { FieldType, FormDef, FormField, FormStatus } from '@/types/domain'
 
-interface FieldDraft {
-  id: string
-  label: string
-  field_type: FieldType
-  is_required: boolean
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
 }
 
-interface FormDraft {
-  id: string
-  name: string
-  departmentCode: string
-  referencePrefix: string
-  status: 'draft' | 'published'
-  fields: FieldDraft[]
+function fieldKeyFrom(label: string, existing: string[]) {
+  const base = label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/(^_|_$)/g, '') || 'field'
+  let key = base
+  let i = 2
+  while (existing.includes(key)) {
+    key = `${base}_${i}`
+    i += 1
+  }
+  return key
 }
 
-const initialForms: FormDraft[] = [
-  {
-    id: 'hr-leave-request',
-    name: 'Leave Request',
-    departmentCode: 'HR',
-    referencePrefix: 'LR',
-    status: 'published',
-    fields: [
-      { id: 'f1', label: 'Leave Type', field_type: 'dropdown', is_required: true },
-      { id: 'f2', label: 'Start Date', field_type: 'date', is_required: true },
-      { id: 'f3', label: 'End Date', field_type: 'date', is_required: true },
-      { id: 'f4', label: 'Reason', field_type: 'long_text', is_required: false },
-    ],
-  },
-  {
-    id: 'fin-expense-reimbursement',
-    name: 'Expense Reimbursement',
-    departmentCode: 'FIN',
-    referencePrefix: 'EXP',
-    status: 'draft',
-    fields: [{ id: 'f1', label: 'Amount', field_type: 'number', is_required: true }],
-  },
-  {
-    id: 'ops-procurement-request',
-    name: 'Procurement Request',
-    departmentCode: 'OPS',
-    referencePrefix: 'PR',
-    status: 'draft',
-    fields: [],
-  },
-]
-
-function NewFormDialog({ onCreate }: { onCreate: (form: FormDraft) => void }) {
+function NewFormDialog({
+  departments,
+  onCreate,
+}: {
+  departments: { id: string; name: string; code: string }[]
+  onCreate: (form: { name: string; departmentId: string; prefix: string }) => void
+}) {
   const [open, setOpen] = React.useState(false)
   const [name, setName] = React.useState('')
-  const [departmentCode, setDepartmentCode] = React.useState(demoDepartments[0]!.code)
+  const [departmentId, setDepartmentId] = React.useState(departments[0]?.id ?? '')
   const [prefix, setPrefix] = React.useState('')
+
+  React.useEffect(() => {
+    if (!departmentId && departments[0]) setDepartmentId(departments[0].id)
+  }, [departments, departmentId])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    onCreate({
-      id: crypto.randomUUID(),
-      name,
-      departmentCode,
-      referencePrefix: prefix || name.slice(0, 3).toUpperCase(),
-      status: 'draft',
-      fields: [],
-    })
+    onCreate({ name, departmentId, prefix: prefix || name.slice(0, 3).toUpperCase() })
     setName('')
     setPrefix('')
     setOpen(false)
@@ -111,13 +89,13 @@ function NewFormDialog({ onCreate }: { onCreate: (form: FormDraft) => void }) {
           </div>
           <div className="flex flex-col gap-1.5">
             <Label>Department</Label>
-            <Select value={departmentCode} onValueChange={setDepartmentCode}>
+            <Select value={departmentId} onValueChange={setDepartmentId}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {demoDepartments.map((d) => (
-                  <SelectItem key={d.code} value={d.code}>
+                {departments.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
                     {d.name}
                   </SelectItem>
                 ))}
@@ -137,7 +115,7 @@ function NewFormDialog({ onCreate }: { onCreate: (form: FormDraft) => void }) {
   )
 }
 
-function AddFieldDialog({ onAdd }: { onAdd: (field: FieldDraft) => void }) {
+function AddFieldDialog({ onAdd }: { onAdd: (field: { label: string; type: FieldType; required: boolean }) => void }) {
   const [open, setOpen] = React.useState(false)
   const [label, setLabel] = React.useState('')
   const [type, setType] = React.useState<FieldType>('short_text')
@@ -145,7 +123,7 @@ function AddFieldDialog({ onAdd }: { onAdd: (field: FieldDraft) => void }) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    onAdd({ id: crypto.randomUUID(), label, field_type: type, is_required: required })
+    onAdd({ label, type, required })
     setLabel('')
     setType('short_text')
     setRequired(false)
@@ -197,12 +175,119 @@ function AddFieldDialog({ onAdd }: { onAdd: (field: FieldDraft) => void }) {
 }
 
 export function FormBuilderPage() {
-  const [forms, setForms] = React.useState<FormDraft[]>(initialForms)
-  const [selectedId, setSelectedId] = React.useState(initialForms[0]!.id)
-  const selected = forms.find((f) => f.id === selectedId) ?? forms[0]!
+  const { departments } = useDepartments()
+  const { profile } = useAuth()
+  const [forms, setForms] = React.useState<FormDef[]>([])
+  const [fields, setFields] = React.useState<FormField[]>([])
+  const [selectedId, setSelectedId] = React.useState<string | null>(null)
+  const [loading, setLoading] = React.useState(isSupabaseConfigured)
 
-  function updateSelected(update: (form: FormDraft) => FormDraft) {
-    setForms((prev) => prev.map((f) => (f.id === selected.id ? update(f) : f)))
+  const loadForms = React.useCallback(async () => {
+    if (!isSupabaseConfigured) return
+    setLoading(true)
+    const { data, error } = await supabase.from('forms').select('*').order('name')
+    if (error) {
+      toast.error(error.message)
+    } else {
+      setForms(data ?? [])
+      setSelectedId((current) => current ?? data?.[0]?.id ?? null)
+    }
+    setLoading(false)
+  }, [])
+
+  const loadFields = React.useCallback(async (formId: string) => {
+    if (!isSupabaseConfigured) return
+    const { data, error } = await supabase
+      .from('form_fields')
+      .select('*')
+      .eq('form_id', formId)
+      .order('order_index')
+    if (error) toast.error(error.message)
+    else setFields(data ?? [])
+  }, [])
+
+  React.useEffect(() => {
+    void loadForms()
+  }, [loadForms])
+
+  React.useEffect(() => {
+    if (selectedId) void loadFields(selectedId)
+  }, [selectedId, loadFields])
+
+  const selected = forms.find((f) => f.id === selectedId) ?? null
+
+  async function handleCreateForm({ name, departmentId, prefix }: { name: string; departmentId: string; prefix: string }) {
+    const slug = `${slugify(name)}-${Math.random().toString(36).slice(2, 6)}`
+    const { data, error } = await supabase
+      .from('forms')
+      .insert({
+        name,
+        slug,
+        department_id: departmentId,
+        reference_prefix: prefix,
+        status: 'draft',
+        requires_approval: true,
+        created_by: profile?.id,
+      })
+      .select()
+      .single()
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+    toast.success(`${name} created`)
+    await loadForms()
+    setSelectedId(data.id)
+  }
+
+  async function handleTogglePublish() {
+    if (!selected) return
+    const next: FormStatus = selected.status === 'published' ? 'draft' : 'published'
+    const { error } = await supabase.from('forms').update({ status: next }).eq('id', selected.id)
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+    toast.success(next === 'published' ? 'Form published' : 'Form moved to draft')
+    await loadForms()
+  }
+
+  async function handleAddField({ label, type, required }: { label: string; type: FieldType; required: boolean }) {
+    if (!selected) return
+    const key = fieldKeyFrom(label, fields.map((f) => f.field_key))
+    const { error } = await supabase.from('form_fields').insert({
+      form_id: selected.id,
+      label,
+      field_key: key,
+      field_type: type,
+      is_required: required,
+      order_index: fields.length + 1,
+    })
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+    await loadFields(selected.id)
+  }
+
+  async function handleDeleteField(fieldId: string) {
+    const { error } = await supabase.from('form_fields').delete().eq('id', fieldId)
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+    if (selected) await loadFields(selected.id)
+  }
+
+  if (!isSupabaseConfigured) {
+    return (
+      <Card>
+        <CardContent className="py-10 text-center text-sm text-muted-foreground">
+          Connect Supabase (see README) to build forms — this screen edits the real <code>forms</code> and{' '}
+          <code>form_fields</code> tables directly.
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -210,89 +295,91 @@ export function FormBuilderPage() {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">Forms</h2>
-          <NewFormDialog
-            onCreate={(form) => {
-              setForms((prev) => [...prev, form])
-              setSelectedId(form.id)
-            }}
-          />
+          <NewFormDialog departments={departments} onCreate={handleCreateForm} />
         </div>
-        <div className="flex flex-col gap-1">
-          {forms.map((form) => (
-            <button
-              key={form.id}
-              onClick={() => setSelectedId(form.id)}
-              className={cn(
-                'flex flex-col items-start rounded-md border border-transparent px-3 py-2 text-left text-sm hover:bg-accent',
-                form.id === selected.id && 'border-border bg-accent',
-              )}
-            >
-              <span className="font-medium">{form.name}</span>
-              <span className="text-xs text-muted-foreground">
-                {form.departmentCode} · {form.fields.length} fields
-              </span>
-            </button>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" /> Loading…
+          </div>
+        ) : forms.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No forms yet. Create the first one.</p>
+        ) : (
+          <div className="flex flex-col gap-1">
+            {forms.map((form) => {
+              const dept = departments.find((d) => d.id === form.department_id)
+              return (
+                <button
+                  key={form.id}
+                  onClick={() => setSelectedId(form.id)}
+                  className={cn(
+                    'flex flex-col items-start rounded-md border border-transparent px-3 py-2 text-left text-sm hover:bg-accent',
+                    form.id === selected?.id && 'border-border bg-accent',
+                  )}
+                >
+                  <span className="font-medium">{form.name}</span>
+                  <span className="text-xs text-muted-foreground">{dept?.code ?? 'Org-wide'} · {form.status}</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle className="text-base">{selected.name}</CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {selected.departmentCode} · Reference prefix {selected.referencePrefix}-0001
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant={selected.status === 'published' ? 'success' : 'secondary'}>{selected.status}</Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                updateSelected((f) => ({ ...f, status: f.status === 'published' ? 'draft' : 'published' }))
-                toast.success(selected.status === 'published' ? 'Form moved to draft' : 'Form published')
-              }}
-            >
-              {selected.status === 'published' ? 'Unpublish' : 'Publish'}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Fields</p>
-            <AddFieldDialog onAdd={(field) => updateSelected((f) => ({ ...f, fields: [...f.fields, field] }))} />
-          </div>
+      {selected ? (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <div>
+              <CardTitle className="text-base">{selected.name}</CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {departments.find((d) => d.id === selected.department_id)?.code ?? 'Org-wide'} · Reference prefix{' '}
+                {selected.reference_prefix}-0001
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={selected.status === 'published' ? 'success' : 'secondary'}>{selected.status}</Badge>
+              <Button variant="outline" size="sm" onClick={handleTogglePublish}>
+                {selected.status === 'published' ? 'Unpublish' : 'Publish'}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Fields</p>
+              <AddFieldDialog onAdd={handleAddField} />
+            </div>
 
-          {selected.fields.length === 0 && (
-            <p className="rounded-md border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
-              No fields yet. Add the first field to start building this form.
-            </p>
-          )}
+            {fields.length === 0 && (
+              <p className="rounded-md border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
+                No fields yet. Add the first field to start building this form.
+              </p>
+            )}
 
-          <div className="flex flex-col gap-2">
-            {selected.fields.map((field) => (
-              <div key={field.id} className="flex items-center gap-3 rounded-md border border-border p-3">
-                <GripVertical className="size-4 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{field.label}</p>
-                  <p className="text-xs text-muted-foreground">{fieldTypeLabel(field.field_type)}</p>
+            <div className="flex flex-col gap-2">
+              {fields.map((field) => (
+                <div key={field.id} className="flex items-center gap-3 rounded-md border border-border p-3">
+                  <GripVertical className="size-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{field.label}</p>
+                    <p className="text-xs text-muted-foreground">{fieldTypeLabel(field.field_type)}</p>
+                  </div>
+                  {field.is_required && <Badge variant="outline">Required</Badge>}
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteField(field.id)}>
+                    <Trash2 className="size-4" />
+                  </Button>
                 </div>
-                {field.is_required && <Badge variant="outline">Required</Badge>}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() =>
-                    updateSelected((f) => ({ ...f, fields: f.fields.filter((fl) => fl.id !== field.id) }))
-                  }
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        !loading && (
+          <Card>
+            <CardContent className="py-16 text-center text-sm text-muted-foreground">
+              Select a form, or create one to get started.
+            </CardContent>
+          </Card>
+        )
+      )}
     </div>
   )
 }

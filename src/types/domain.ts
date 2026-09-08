@@ -97,12 +97,12 @@ export type FormField = {
   label: string
   field_key: string
   field_type: FieldType
-  options: string[]
+  options: unknown
   placeholder: string | null
   help_text: string | null
   is_required: boolean
   order_index: number
-  validation: Record<string, unknown>
+  validation: unknown
   created_at: string
 }
 
@@ -164,7 +164,7 @@ export type Task = {
   description: string | null
   related_submission_id: string | null
   due_date: string | null
-  priority: 'low' | 'normal' | 'high' | 'urgent'
+  priority: string
   status: TaskStatus
   created_at: string
   updated_at: string
@@ -181,7 +181,7 @@ export type Document = {
   access_level: DocumentAccessLevel
   related_type: string | null
   related_id: string | null
-  status: 'active' | 'archived'
+  status: string
   created_at: string
   updated_at: string
 }

@@ -12,6 +12,7 @@ import {
 import * as React from 'react'
 import { NavLink } from 'react-router-dom'
 
+import { LogoMark } from '@/components/brand/Logo'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { cn } from '@/lib/utils'
 
@@ -68,9 +69,9 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      <div className="flex items-center gap-2 px-4 py-5">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-          MS
+      <div className="flex items-center gap-2.5 px-4 py-5">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white p-1.5">
+          <LogoMark className="size-full" />
         </div>
         <div className="leading-tight">
           <p className="text-sm font-semibold">Mindshift Internal</p>

@@ -156,14 +156,20 @@ src/
     ui/            shadcn-style primitives (button, card, dialog, table, ...)
     layout/        AppShell, Sidebar, Topbar
     dashboard/     StatCard, RecordCard (the "everything is a card" pattern)
+    brand/         Logo (LogoMark / LogoWordmark) — vector placeholder for the
+                    real Mindshift logo asset, swap in src/components/brand/Logo.tsx
   features/
-    auth/          AuthProvider, LoginPage, ProtectedRoute
-    dashboard/     DashboardPage
+    auth/          AuthProvider, LoginPage (sign in + self-service sign-up), ProtectedRoute
+    dashboard/     DashboardPage (live stats/activity/records)
     departments/   DepartmentsListPage, DepartmentDetailPage (Forms/Records/Workflows/Reports tabs)
+    mywork/        MyWorkPage (My Approvals / My Tasks / My Submissions)
+    documents/     DocumentsPage (live list; no upload flow yet)
+    reports/       ReportsPage (submissions by department)
+    profile/       ProfilePage (self view/edit)
     admin/         CreateDepartmentDialog, AdminDepartmentsPage, AdminUsersPage,
                     FormBuilderPage, WorkflowBuilderPage, AuditLogPage, SystemSettingsPage
-    misc/          PlaceholderPage (My Work, Documents, Reports, Profile — scaffolded
-                    in the nav and data model, not yet built out)
+  hooks/
+    useDepartments.ts  live department list, demo-data fallback
   lib/
     supabase.ts    typed Supabase client + isSupabaseConfigured flag
     demoData.ts    fallback dataset shown until a backend is connected
@@ -180,25 +186,39 @@ supabase/
 
 ## What's built vs. what's next
 
-Built end-to-end (schema + RLS + UI, backed by the live Supabase project
-when `.env` is set, demo data otherwise):
+Every screen reads and writes the live Supabase project when `.env` is set
+(falls back to `demoData.ts` only when it isn't):
 
 - Real auth: sign in, self-service sign-up, protected routes
-- Department directory + detail (Forms/Records/Workflows/Reports tabs)
+- Dashboard: live stat cards (active staff, departments, published forms, my
+  approvals, my open tasks, total submissions), a recent-activity feed from
+  `audit_logs`, and recent submission cards
+- Department directory + detail (live department list; the Forms tab reads
+  real `forms` rows for that department)
+- My Work: My Approvals (approve/reject with the real workflow engine —
+  deciding an approval advances the chain via the DB trigger), My Tasks,
+  My Submissions
+- Documents: live list from the `documents` table (upload isn't wired up —
+  needs a Supabase Storage bucket, noted on the page)
+- Reports: submissions-by-department, computed from live `form_submissions`
+- My Profile: view/edit your own profile; shows whether HR has a
+  confidential record on file for you
 - Administration → Departments (`+ Create Department`, no code required)
-- Administration → Form Builder (create a form, add/remove fields, publish/draft)
-- Administration → Workflow Builder (WHEN/THEN approval chain editor)
-- Administration → Users & Roles, Audit Log, System Settings
-- Dashboard with stat cards, record cards and an activity feed
+- Administration → Form Builder (create a form, add/remove fields,
+  publish/draft — writes `forms`/`form_fields` directly)
+- Administration → Workflow Builder (create a workflow, add approval steps
+  by reporting-manager/department-head/role/specific-person — writes
+  `workflows`/`workflow_steps` directly)
+- Administration → Users & Roles (grants department-scoped or org-wide
+  roles to any signed-up user — no invite-by-email flow, since that needs a
+  service-role key this build doesn't have; people self-register from the
+  login screen and an admin grants their role here)
+- Administration → Audit Log (live `audit_logs`, newest first)
+- Administration → System Settings (still a static preview — org
+  name/logo/numbering-convention fields aren't persisted yet)
 
-Note: the Departments/Form Builder/Workflow Builder/Users pages still render
-from `demoData.ts` rather than live queries — the backend (schema, RLS,
-auth) is fully wired, but most list/detail screens haven't been switched
-from demo arrays to `supabase.from(...)` calls yet. `CreateDepartmentDialog`
-is the one screen that already writes to the real `departments` table.
-
-Scaffolded in the data model and navigation, ready to build out next:
-My Work (task inbox), Documents, Reports, My Profile, email/Teams
-notification delivery, and a Staff Master Data → HR review → staff number
-assignment flow on top of the generic form/workflow engine that already
-supports it.
+Genuinely not built yet: file upload to Documents (needs a Storage
+bucket + policies), email/Teams notification delivery (the `notifications`
+table and in-app rows exist; nothing sends email yet), and a dedicated
+Staff Master Data → HR review → staff number assignment UI (the generic
+form/workflow engine already supports building this as an ordinary form).
