@@ -33,17 +33,19 @@ export function DepartmentsListPage() {
             <Link key={dept.id} to={`/departments/${dept.id}`}>
               <Card className="h-full transition-shadow hover:shadow-md">
                 <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex size-9 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                  <div className="flex items-start gap-2.5">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
                       <Building2 className="size-4" />
                     </div>
-                    <CardTitle className="text-sm">{dept.name}</CardTitle>
+                    <CardTitle className="line-clamp-2 min-h-10 text-sm leading-tight">{dept.name}</CardTitle>
                   </div>
-                  <Badge variant="outline">{dept.code}</Badge>
+                  <Badge variant="outline" className="shrink-0">
+                    {dept.code}
+                  </Badge>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-2">
-                  <p className="text-xs text-muted-foreground">{dept.description}</p>
-                  <div className="flex items-center gap-4 pt-1 text-xs text-muted-foreground">
+                <CardContent className="flex flex-1 flex-col gap-2">
+                  <p className="line-clamp-2 text-xs text-muted-foreground">{dept.description}</p>
+                  <div className="mt-auto flex items-center gap-4 pt-1 text-xs text-muted-foreground">
                     <span>{dept.memberCount} members</span>
                     <span>{dept.openRecords} open records</span>
                   </div>
