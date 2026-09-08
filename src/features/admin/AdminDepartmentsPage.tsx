@@ -3,7 +3,6 @@ import { Loader2, Pencil } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { CreateDepartmentDialog } from '@/features/admin/CreateDepartmentDialog'
 import { useDepartments } from '@/hooks/useDepartments'
 
@@ -22,51 +21,43 @@ export function AdminDepartmentsPage() {
         <CreateDepartmentDialog onCreated={refresh} />
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="flex items-center gap-2 p-6 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" /> Loading departments…
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Members</TableHead>
-                  <TableHead>Open Records</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {departments.map((dept) => (
-                  <TableRow key={dept.id}>
-                    <TableCell>
-                      <p className="font-medium">{dept.name}</p>
-                      <p className="text-xs text-muted-foreground">{dept.description}</p>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{dept.code}</Badge>
-                    </TableCell>
-                    <TableCell>{dept.memberCount}</TableCell>
-                    <TableCell>{dept.openRecords}</TableCell>
-                    <TableCell>
-                      <Badge variant="success">Active</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon">
-                        <Pencil className="size-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {loading ? (
+        <div className="flex items-center gap-2 py-12 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" /> Loading departments…
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {departments.map((dept) => (
+            <Card key={dept.id} className="h-52">
+              <CardContent className="flex h-full flex-col gap-3 pt-6">
+                <div className="flex items-start justify-between gap-2">
+                  <Badge variant="outline">{dept.code}</Badge>
+                  <div className="flex items-center gap-1">
+                    <Badge variant="success" dot>
+                      Active
+                    </Badge>
+                    <Button variant="ghost" size="icon" className="size-7">
+                      <Pencil className="size-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <p className="line-clamp-2 min-h-10 font-semibold">{dept.name}</p>
+                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{dept.description}</p>
+                </div>
+                <div className="mt-auto flex items-center gap-4 text-sm">
+                  <span>
+                    <strong>{dept.memberCount}</strong> <span className="text-muted-foreground">members</span>
+                  </span>
+                  <span>
+                    <strong>{dept.openRecords}</strong> <span className="text-muted-foreground">open</span>
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

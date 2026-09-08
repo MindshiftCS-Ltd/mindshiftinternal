@@ -24,21 +24,23 @@ export interface RecordCardProps {
 
 export function RecordCard({ id, kind, title, subtitle, meta, status, onView }: RecordCardProps) {
   return (
-    <Card>
+    <Card className="h-44">
       <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-        <div>
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        <div className="min-w-0">
+          <p className="truncate text-xs font-medium tracking-wide text-muted-foreground uppercase">
             {kind} · {id}
           </p>
-          <p className="mt-1 text-sm font-semibold">{title}</p>
-          {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+          <p className="mt-1 line-clamp-1 text-sm font-semibold">{title}</p>
+          <p className="line-clamp-1 text-xs text-muted-foreground">{subtitle ?? ' '}</p>
         </div>
-        <Badge variant={statusVariant(status)} dot>
+        <Badge variant={statusVariant(status)} dot className="shrink-0">
           {status}
         </Badge>
       </CardHeader>
-      <CardContent>{meta && <p className="text-sm text-muted-foreground">{meta}</p>}</CardContent>
-      <CardFooter className="gap-2">
+      <CardContent>
+        <p className="line-clamp-1 text-sm text-muted-foreground">{meta ?? ' '}</p>
+      </CardContent>
+      <CardFooter className="mt-auto gap-2">
         <Button size="sm" variant="outline" onClick={onView}>
           View
         </Button>

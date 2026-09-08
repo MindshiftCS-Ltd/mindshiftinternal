@@ -1,8 +1,7 @@
 import { Loader2 } from 'lucide-react'
 import * as React from 'react'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Card, CardContent } from '@/components/ui/card'
 import { useDepartments } from '@/hooks/useDepartments'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
@@ -12,6 +11,21 @@ interface DeptCount {
   approved: number
   pending: number
   rejected: number
+}
+
+function Metric({ label, value, tone }: { label: string; value: number; tone: 'default' | 'warning' | 'success' | 'destructive' }) {
+  const toneClass = {
+    default: 'text-foreground',
+    warning: 'text-warning-foreground',
+    success: 'text-success',
+    destructive: 'text-destructive',
+  }[tone]
+  return (
+    <div className="rounded-xl bg-secondary/50 px-3 py-2.5">
+      <p className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">{label}</p>
+      <p className={`text-xl font-bold ${toneClass}`}>{value}</p>
+    </div>
+  )
 }
 
 export function ReportsPage() {
@@ -57,42 +71,30 @@ export function ReportsPage() {
         <div className="flex items-center gap-2 py-12 text-sm text-muted-foreground">
           <Loader2 className="size-4 animate-spin" /> Loading…
         </div>
-      ) : (
+      ) : rows.length === 0 ? (
         <Card>
-          <CardHeader>
-            <CardTitle>Submissions by department</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {rows.length === 0 ? (
-              <p className="px-6 pb-6 text-sm text-muted-foreground">No submissions recorded yet.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Pending</TableHead>
-                    <TableHead>Approved</TableHead>
-                    <TableHead>Rejected</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.map((row) => (
-                    <TableRow key={row.departmentId ?? 'org-wide'}>
-                      <TableCell className="font-medium">
-                        {departments.find((d) => d.id === row.departmentId)?.name ?? 'Organisation-wide'}
-                      </TableCell>
-                      <TableCell>{row.total}</TableCell>
-                      <TableCell>{row.pending}</TableCell>
-                      <TableCell>{row.approved}</TableCell>
-                      <TableCell>{row.rejected}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            No submissions recorded yet.
           </CardContent>
         </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {rows.map((row) => (
+            <Card key={row.departmentId ?? 'org-wide'}>
+              <CardContent className="flex flex-col gap-4 pt-6">
+                <div>
+                  <p className="font-semibold">{departments.find((d) => d.id === row.departmentId)?.name ?? 'Organisation-wide'}</p>
+                  <p className="text-xs text-muted-foreground">{row.total} total submission{row.total === 1 ? '' : 's'}</p>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <Metric label="Pending" value={row.pending} tone="warning" />
+                  <Metric label="Approved" value={row.approved} tone="success" />
+                  <Metric label="Rejected" value={row.rejected} tone="destructive" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   )
