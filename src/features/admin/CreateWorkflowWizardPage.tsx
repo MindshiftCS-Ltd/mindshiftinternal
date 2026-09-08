@@ -158,7 +158,7 @@ function AddStepDialog({ roles, onAdd }: { roles: Role[]; onAdd: (step: DraftSte
 }
 
 function Stepper({ step, maxStep, onJump }: { step: number; maxStep: number; onJump: (n: number) => void }) {
-  const labels = ['Basic Details', 'Configure Steps', 'Review Approvals', 'Notifications']
+  const labels = ['Basic Details', 'Configure Steps', 'Set Approvals', 'Notifications']
   return (
     <div className="flex items-center">
       {labels.map((label, i) => {
@@ -251,7 +251,7 @@ function PreviewPanel({
           </div>
           <div>
             <p className="font-semibold">Workflow Preview</p>
-            <p className="text-xs text-muted-foreground">See how this will flow once published.</p>
+            <p className="text-xs text-muted-foreground">See how your workflow will look and flow through the system.</p>
           </div>
         </div>
 
@@ -282,7 +282,7 @@ function PreviewPanel({
 
         {departmentName && (
           <div className="rounded-xl bg-accent/60 p-3 text-sm text-accent-foreground">
-            This workflow will be available to <strong>{departmentName}</strong> and its members.
+            This workflow will be available to <strong>{departmentName}</strong> and all department managers.
           </div>
         )}
       </CardContent>
@@ -412,7 +412,8 @@ export function CreateWorkflowWizardPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Create New Workflow</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Set up a new workflow for a department or process. Customize steps, approvals and notifications.
+            Set up a new workflow for a department or process. You can customize steps, approvals, notifications and
+            assign responsible people.
           </p>
         </div>
         <div className="flex gap-2">
@@ -521,6 +522,15 @@ export function CreateWorkflowWizardPage() {
                     <div className="flex flex-col gap-4 border-t border-border/60 px-4 py-4">
                       <div className="flex items-center justify-between gap-4">
                         <div>
+                          <p className="text-sm font-medium">Allow parallel steps</p>
+                          <p className="text-xs text-muted-foreground">
+                            Let multiple people handle steps at the same time — not yet supported by the workflow engine.
+                          </p>
+                        </div>
+                        <Switch checked={false} disabled />
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
                           <p className="text-sm font-medium">Require completion before next step</p>
                           <p className="text-xs text-muted-foreground">
                             Steps run in order — each must be resolved before the next one starts.
@@ -600,7 +610,7 @@ export function CreateWorkflowWizardPage() {
 
             {step === 3 && (
               <div className="flex flex-col gap-3">
-                <h3 className="text-base font-semibold">Review Approvals</h3>
+                <h3 className="text-base font-semibold">Set Approvals</h3>
                 <p className="text-sm text-muted-foreground">
                   Confirm the approval chain below before publishing. You can still go back and adjust it.
                 </p>
