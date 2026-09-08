@@ -1,4 +1,4 @@
-import { ArrowRight, Loader2, Plus, Trash2 } from 'lucide-react'
+import { ArrowRight, Building2, Loader2, Plus, Shield, Trash2, User, UserCheck } from 'lucide-react'
 import * as React from 'react'
 import { toast } from 'sonner'
 
@@ -26,6 +26,13 @@ const APPROVER_TYPE_LABEL: Record<ApproverType, string> = {
   department_head: 'Department Head',
   role: 'Specific Role',
   specific_user: 'Specific Person',
+}
+
+const APPROVER_TYPE_STYLE: Record<ApproverType, { icon: typeof User; border: string; iconBg: string; iconColor: string }> = {
+  reporting_manager: { icon: User, border: 'border-l-blue-400', iconBg: 'bg-blue-50', iconColor: 'text-blue-500' },
+  department_head: { icon: Building2, border: 'border-l-purple-400', iconBg: 'bg-purple-50', iconColor: 'text-purple-500' },
+  role: { icon: Shield, border: 'border-l-amber-400', iconBg: 'bg-amber-50', iconColor: 'text-amber-500' },
+  specific_user: { icon: UserCheck, border: 'border-l-pink-400', iconBg: 'bg-pink-50', iconColor: 'text-pink-500' },
 }
 
 function NewWorkflowDialog({
@@ -327,28 +334,57 @@ export function WorkflowBuilderPage() {
             <AddStepDialog roles={roles} onAdd={handleAddStep} />
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">Submitted</Badge>
-              {steps.map((step) => (
-                <React.Fragment key={step.id}>
-                  <ArrowRight className="size-4 text-muted-foreground" />
-                  <div className="flex items-center gap-1 rounded-md border border-border py-1 pr-1 pl-2.5">
-                    <div className="text-sm">
-                      <p className="font-medium leading-tight">{step.name}</p>
-                      <p className="text-xs leading-tight text-muted-foreground">
-                        {step.approver_type === 'role'
-                          ? roles.find((r) => r.id === step.approver_role_id)?.name ?? 'Role'
-                          : APPROVER_TYPE_LABEL[step.approver_type]}
-                      </p>
+            <div
+              className="flex flex-wrap items-center gap-3 rounded-2xl p-6"
+              style={{
+                backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
+                backgroundSize: '18px 18px',
+                color: 'var(--border)',
+              }}
+            >
+              <Badge variant="secondary" dot className="bg-white shadow-xs" style={{ color: 'var(--foreground)' }}>
+                Submitted
+              </Badge>
+              {steps.map((step) => {
+                const style = APPROVER_TYPE_STYLE[step.approver_type]
+                const Icon = style.icon
+                return (
+                  <React.Fragment key={step.id}>
+                    <ArrowRight className="size-4 shrink-0" style={{ color: 'var(--border)' }} />
+                    <div
+                      className={cn(
+                        'group flex items-center gap-2.5 rounded-xl border-l-[3px] bg-white py-2 pr-2 pl-3 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_2px_8px_-2px_rgba(16,24,40,0.06)]',
+                        style.border,
+                      )}
+                    >
+                      <div className={cn('flex size-8 shrink-0 items-center justify-center rounded-lg', style.iconBg)}>
+                        <Icon className={cn('size-4', style.iconColor)} />
+                      </div>
+                      <div className="text-sm">
+                        <p className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                          {step.approver_type === 'role'
+                            ? (roles.find((r) => r.id === step.approver_role_id)?.name ?? 'Role')
+                            : APPROVER_TYPE_LABEL[step.approver_type]}
+                        </p>
+                        <p className="leading-tight font-semibold text-foreground">{step.name}</p>
+                      </div>
+                      <span className="ml-1 size-1.5 shrink-0 rounded-full bg-success" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-6 opacity-0 transition-opacity group-hover:opacity-100"
+                        onClick={() => handleDeleteStep(step.id)}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
                     </div>
-                    <Button variant="ghost" size="icon" className="size-6" onClick={() => handleDeleteStep(step.id)}>
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
-                </React.Fragment>
-              ))}
-              <ArrowRight className="size-4 text-muted-foreground" />
-              <Badge variant="success">Approved</Badge>
+                  </React.Fragment>
+                )
+              })}
+              <ArrowRight className="size-4 shrink-0" style={{ color: 'var(--border)' }} />
+              <Badge variant="success" dot className="bg-white shadow-xs">
+                Approved
+              </Badge>
             </div>
           </CardContent>
         </Card>

@@ -1,4 +1,15 @@
-import { GripVertical, Loader2, Plus, Trash2 } from 'lucide-react'
+import {
+  AlignLeft,
+  Calendar,
+  GripVertical,
+  Hash,
+  ListChecks,
+  Loader2,
+  Paperclip,
+  PenTool,
+  Plus,
+  Trash2,
+} from 'lucide-react'
 import * as React from 'react'
 import { toast } from 'sonner'
 
@@ -24,6 +35,20 @@ import { FIELD_TYPE_OPTIONS, fieldTypeLabel } from '@/lib/fieldTypes'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { FieldType, FormDef, FormField, FormStatus } from '@/types/domain'
+
+const FIELD_TYPE_STYLE: Record<FieldType, { icon: typeof AlignLeft; border: string; iconBg: string; iconColor: string }> = {
+  short_text: { icon: AlignLeft, border: 'border-l-blue-400', iconBg: 'bg-blue-50', iconColor: 'text-blue-500' },
+  long_text: { icon: AlignLeft, border: 'border-l-blue-400', iconBg: 'bg-blue-50', iconColor: 'text-blue-500' },
+  email: { icon: AlignLeft, border: 'border-l-blue-400', iconBg: 'bg-blue-50', iconColor: 'text-blue-500' },
+  phone: { icon: AlignLeft, border: 'border-l-blue-400', iconBg: 'bg-blue-50', iconColor: 'text-blue-500' },
+  number: { icon: Hash, border: 'border-l-teal-400', iconBg: 'bg-teal-50', iconColor: 'text-teal-500' },
+  date: { icon: Calendar, border: 'border-l-purple-400', iconBg: 'bg-purple-50', iconColor: 'text-purple-500' },
+  dropdown: { icon: ListChecks, border: 'border-l-amber-400', iconBg: 'bg-amber-50', iconColor: 'text-amber-500' },
+  multi_select: { icon: ListChecks, border: 'border-l-amber-400', iconBg: 'bg-amber-50', iconColor: 'text-amber-500' },
+  checkbox: { icon: ListChecks, border: 'border-l-amber-400', iconBg: 'bg-amber-50', iconColor: 'text-amber-500' },
+  file_upload: { icon: Paperclip, border: 'border-l-pink-400', iconBg: 'bg-pink-50', iconColor: 'text-pink-500' },
+  signature: { icon: PenTool, border: 'border-l-zinc-400', iconBg: 'bg-zinc-100', iconColor: 'text-zinc-500' },
+}
 
 function slugify(text: string) {
   return text
@@ -348,27 +373,58 @@ export function FormBuilderPage() {
               <AddFieldDialog onAdd={handleAddField} />
             </div>
 
-            {fields.length === 0 && (
-              <p className="rounded-md border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
+            {fields.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
                 No fields yet. Add the first field to start building this form.
               </p>
+            ) : (
+              <div
+                className="flex flex-col gap-2 rounded-2xl p-4"
+                style={{
+                  backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
+                  backgroundSize: '18px 18px',
+                  color: 'var(--border)',
+                }}
+              >
+                {fields.map((field) => {
+                  const style = FIELD_TYPE_STYLE[field.field_type]
+                  const Icon = style.icon
+                  return (
+                    <div
+                      key={field.id}
+                      className={cn(
+                        'group flex items-center gap-3 rounded-xl border-l-[3px] bg-white p-2.5 pr-2 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_2px_8px_-2px_rgba(16,24,40,0.06)]',
+                        style.border,
+                      )}
+                    >
+                      <GripVertical className="size-4 shrink-0 text-muted-foreground/50" />
+                      <div className={cn('flex size-8 shrink-0 items-center justify-center rounded-lg', style.iconBg)}>
+                        <Icon className={cn('size-4', style.iconColor)} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                          {fieldTypeLabel(field.field_type)}
+                        </p>
+                        <p className="leading-tight font-semibold text-foreground">{field.label}</p>
+                      </div>
+                      {field.is_required && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <span className="size-1.5 rounded-full bg-warning" /> Required
+                        </span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7 opacity-0 transition-opacity group-hover:opacity-100"
+                        onClick={() => handleDeleteField(field.id)}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+                  )
+                })}
+              </div>
             )}
-
-            <div className="flex flex-col gap-2">
-              {fields.map((field) => (
-                <div key={field.id} className="flex items-center gap-3 rounded-md border border-border p-3">
-                  <GripVertical className="size-4 text-muted-foreground" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{field.label}</p>
-                    <p className="text-xs text-muted-foreground">{fieldTypeLabel(field.field_type)}</p>
-                  </div>
-                  {field.is_required && <Badge variant="outline">Required</Badge>}
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteField(field.id)}>
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
           </CardContent>
         </Card>
       ) : (
