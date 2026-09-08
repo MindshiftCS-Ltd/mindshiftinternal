@@ -4,6 +4,7 @@ import { AppShell } from '@/components/layout/AppShell'
 import { AuditLogPage } from '@/features/admin/AuditLogPage'
 import { AdminDepartmentsPage } from '@/features/admin/AdminDepartmentsPage'
 import { AdminUsersPage } from '@/features/admin/AdminUsersPage'
+import { CreateWorkflowWizardPage } from '@/features/admin/CreateWorkflowWizardPage'
 import { FormBuilderPage } from '@/features/admin/FormBuilderPage'
 import { SystemSettingsPage } from '@/features/admin/SystemSettingsPage'
 import { WorkflowBuilderPage } from '@/features/admin/WorkflowBuilderPage'
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
           { path: 'admin/users', element: <AdminUsersPage />, handle: { title: 'Administration · Users & Roles' } },
           { path: 'admin/forms', element: <FormBuilderPage />, handle: { title: 'Administration · Form Builder' } },
           { path: 'admin/workflows', element: <WorkflowBuilderPage />, handle: { title: 'Administration · Workflow Builder' } },
+          { path: 'admin/workflows/new', element: <CreateWorkflowWizardPage />, handle: { title: 'Administration · New Workflow' } },
           { path: 'admin/audit-log', element: <AuditLogPage />, handle: { title: 'Administration · Audit Log' } },
           { path: 'admin/settings', element: <SystemSettingsPage />, handle: { title: 'Administration · System Settings' } },
         ],

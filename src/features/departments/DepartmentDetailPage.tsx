@@ -27,7 +27,7 @@ function DepartmentForms({ departmentId, departmentName }: { departmentId: strin
 
   if (!isSupabaseConfigured) {
     return (
-      <div className="flex items-center gap-3 rounded-lg border border-border p-3">
+      <div className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_2px_8px_-2px_rgba(16,24,40,0.06)]">
         <FileText className="size-4 text-muted-foreground" />
         <div>
           <p className="text-sm font-medium">Leave Request</p>
@@ -56,7 +56,10 @@ function DepartmentForms({ departmentId, departmentName }: { departmentId: strin
   return (
     <>
       {forms.map((form) => (
-        <div key={form.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+        <div
+          key={form.id}
+          className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_2px_8px_-2px_rgba(16,24,40,0.06)]"
+        >
           <FileText className="size-4 text-muted-foreground" />
           <div>
             <p className="text-sm font-medium">{form.name}</p>

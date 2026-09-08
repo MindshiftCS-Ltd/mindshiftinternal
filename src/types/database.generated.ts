@@ -821,31 +821,40 @@ export type Database = {
           created_at: string
           created_by: string | null
           department_id: string | null
+          description: string | null
           form_id: string | null
           id: string
           is_active: boolean
           name: string
+          require_sequential_steps: boolean
           updated_at: string
+          workflow_type: string
         }
         Insert: {
           created_at?: string
           created_by?: string | null
           department_id?: string | null
+          description?: string | null
           form_id?: string | null
           id?: string
           is_active?: boolean
           name: string
+          require_sequential_steps?: boolean
           updated_at?: string
+          workflow_type?: string
         }
         Update: {
           created_at?: string
           created_by?: string | null
           department_id?: string | null
+          description?: string | null
           form_id?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          require_sequential_steps?: boolean
           updated_at?: string
+          workflow_type?: string
         }
         Relationships: [
           {

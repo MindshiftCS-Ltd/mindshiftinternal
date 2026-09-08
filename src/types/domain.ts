@@ -120,11 +120,16 @@ export type FormSubmission = {
   updated_at: string
 }
 
+export type WorkflowType = 'approval_workflow' | 'notification_workflow' | 'automation'
+
 export type Workflow = {
   id: string
   form_id: string | null
   department_id: string | null
   name: string
+  description: string | null
+  workflow_type: string
+  require_sequential_steps: boolean
   is_active: boolean
   created_by: string | null
   created_at: string
