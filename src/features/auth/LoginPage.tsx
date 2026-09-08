@@ -10,8 +10,10 @@ import { Label } from '@/components/ui/label'
 import { isSupabaseConfigured } from '@/lib/supabase'
 
 export function LoginPage() {
-  const { session, signInWithPassword } = useAuth()
+  const { session, signInWithPassword, signUpWithPassword } = useAuth()
   const location = useLocation()
+  const [mode, setMode] = React.useState<'sign-in' | 'sign-up'>('sign-in')
+  const [fullName, setFullName] = React.useState('')
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [submitting, setSubmitting] = React.useState(false)
@@ -24,9 +26,17 @@ export function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
-    const { error } = await signInWithPassword(email, password)
+    const { error } =
+      mode === 'sign-in' ? await signInWithPassword(email, password) : await signUpWithPassword(email, password, fullName)
     setSubmitting(false)
-    if (error) toast.error(error)
+    if (error) {
+      toast.error(error)
+      return
+    }
+    if (mode === 'sign-up') {
+      toast.success('Account created. Check your email to confirm, then sign in.')
+      setMode('sign-in')
+    }
   }
 
   return (
@@ -47,6 +57,12 @@ export function LoginPage() {
             </p>
           ) : (
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+              {mode === 'sign-up' && (
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="full-name">Full name</Label>
+                  <Input id="full-name" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ada Nwosu" />
+                </div>
+              )}
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="email">Work email</Label>
                 <Input
@@ -64,15 +80,23 @@ export function LoginPage() {
                 <Input
                   id="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
                   required
+                  minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
               <Button type="submit" disabled={submitting} className="mt-2">
-                {submitting ? 'Signing in…' : 'Sign in'}
+                {submitting ? 'Please wait…' : mode === 'sign-in' ? 'Sign in' : 'Create account'}
               </Button>
+              <button
+                type="button"
+                className="text-center text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in')}
+              >
+                {mode === 'sign-in' ? "First time here? Create an account" : 'Already have an account? Sign in'}
+              </button>
             </form>
           )}
         </CardContent>

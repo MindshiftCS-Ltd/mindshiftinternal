@@ -23,17 +23,18 @@ stays on Supabase; Vercel is the intended deploy target.
 
 ## Current status
 
-**A live Supabase project has not been provisioned yet.** The app runs
-today against a bundled demo dataset (`src/lib/demoData.ts`) so every screen
-is fully clickable and visually complete without a backend. The moment
-`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are set (see below) and the
-migrations in `supabase/migrations/` are applied, the same UI starts reading
-and writing real data — the demo dataset is only ever a fallback
-(`isSupabaseConfigured` in `src/lib/supabase.ts` gates it).
+**Connected to a live Supabase project** — `nmigitalvbvutkrosvby` ("MCS
+internal", eu-west-2). All 15 migrations are applied (schema, RLS policies,
+function privilege lockdown, FK indexes, seed data), and `giftakerele1@gmail.com`
+exists as the first Super Admin (staff number `MS-STAFF-0001`). Set
+`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` in `.env` (see below) to point
+your local dev server at it.
 
-While unconfigured, the app also treats the current session as a full-access
-demo admin (see `AuthProvider`) so every screen, including Administration,
-can be reviewed before real auth/roles exist.
+Without a `.env`, the app still runs against a bundled demo dataset
+(`src/lib/demoData.ts`) so every screen is clickable without a backend —
+`isSupabaseConfigured` in `src/lib/supabase.ts` gates the fallback, and while
+unconfigured the app also treats the session as a full-access demo admin so
+Administration can be previewed too.
 
 ## Getting started
 
@@ -42,29 +43,49 @@ npm install
 npm run dev
 ```
 
-Visit `http://localhost:5173`. Without a `.env`, you'll see the full app
-running on demo data with a "Demo data · backend not connected" badge in
-the header.
+Visit `http://localhost:5173`. Copy `.env.example` to `.env` and fill in the
+project URL/anon key below to hit the live database; without a `.env` you'll
+see the full app running on demo data with a "Demo data · backend not
+connected" badge in the header instead.
 
-### Connecting Supabase
+```
+VITE_SUPABASE_URL=https://nmigitalvbvutkrosvby.supabase.co
+VITE_SUPABASE_ANON_KEY=<the publishable/anon key from Supabase → Project Settings → API>
+```
 
-1. Create a Supabase project (dashboard or `supabase projects create`).
-2. Apply the schema: `supabase db push` (or run the files in
-   `supabase/migrations/` in order against the project's SQL editor).
-3. Copy `.env.example` to `.env` and fill in your project's URL and anon key:
-   ```
-   VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-   VITE_SUPABASE_ANON_KEY=<anon-key>
-   ```
-4. Sign a user up through Supabase Auth (or the app's login screen once a
-   sign-up flow is added), then bootstrap that user as the first Super
-   Admin:
-   ```sql
-   insert into public.user_global_roles (user_id, role_id)
-   select '<the user''s auth.users id>', id from public.roles where slug = 'super_admin';
-   ```
-   Every other role and department assignment can be managed from the app
-   from that point on.
+The same values need to be set as environment variables in Vercel
+(Project Settings → Environment Variables) when you deploy.
+
+### First login
+
+`giftakerele1@gmail.com` is already set up as Super Admin. Sign in with the
+temporary password shared in chat when the account was created, then change
+it from Supabase Auth (or wire up a "change password" screen — not built
+yet). To add more people:
+
+- They sign up from the login screen's "Create an account" link (creates an
+  `auth.users` row → a `profiles` row via the `handle_new_auth_user` trigger,
+  with no role yet).
+- An admin then grants them a role from Administration → Users & Roles (a
+  department-scoped role via `department_members`, or a global one —
+  `super_admin`/`flm` — via `user_global_roles`).
+
+To bootstrap a *new* Super Admin directly by SQL (e.g. before the Users &
+Roles screen can do it), run in the Supabase SQL Editor:
+```sql
+insert into public.user_global_roles (user_id, role_id)
+select '<the user''s auth.users id>', id from public.roles where slug = 'super_admin';
+```
+
+### Applying future schema changes
+
+New files in `supabase/migrations/` can be applied via `supabase db push`
+(Supabase CLI) or pasted into Supabase Dashboard → SQL Editor → New query →
+Run, in filename order. After a schema change, regenerate the TypeScript
+types:
+```
+npx supabase gen types typescript --project-id nmigitalvbvutkrosvby > src/types/database.generated.ts
+```
 
 ## Data model & configuration engine
 
@@ -148,25 +169,33 @@ src/
     demoData.ts    fallback dataset shown until a backend is connected
     fieldTypes.ts  Form Builder field type catalogue
   types/
-    domain.ts      hand-written types mirroring the SQL schema
-    database.ts    Supabase Database generic built from domain.ts
-                   (swap for `supabase gen types typescript` once a project exists)
+    domain.ts             hand-written convenience types mirroring the SQL schema,
+                          used for casts in AuthProvider etc.
+    database.generated.ts generated via the Supabase Management API from the live
+                          project — regenerate after every schema change (see above)
 supabase/
-  migrations/      full schema, RLS policies, triggers and seed data
+  migrations/      full schema, RLS policies, function privilege lockdown,
+                   FK indexes, triggers and seed data (15 files, all applied)
 ```
 
 ## What's built vs. what's next
 
-Built end-to-end (schema + RLS + UI, demo-data backed until Supabase is
-connected):
+Built end-to-end (schema + RLS + UI, backed by the live Supabase project
+when `.env` is set, demo data otherwise):
 
+- Real auth: sign in, self-service sign-up, protected routes
 - Department directory + detail (Forms/Records/Workflows/Reports tabs)
 - Administration → Departments (`+ Create Department`, no code required)
 - Administration → Form Builder (create a form, add/remove fields, publish/draft)
 - Administration → Workflow Builder (WHEN/THEN approval chain editor)
 - Administration → Users & Roles, Audit Log, System Settings
 - Dashboard with stat cards, record cards and an activity feed
-- Auth scaffolding (login, protected routes, role-aware sidebar)
+
+Note: the Departments/Form Builder/Workflow Builder/Users pages still render
+from `demoData.ts` rather than live queries — the backend (schema, RLS,
+auth) is fully wired, but most list/detail screens haven't been switched
+from demo arrays to `supabase.from(...)` calls yet. `CreateDepartmentDialog`
+is the one screen that already writes to the real `departments` table.
 
 Scaffolded in the data model and navigation, ready to build out next:
 My Work (task inbox), Documents, Reports, My Profile, email/Teams

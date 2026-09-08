@@ -21,6 +21,7 @@ interface AuthContextValue {
   hasDepartmentRole: (departmentId: string, slug: string) => boolean
   refreshProfile: () => Promise<void>
   signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>
+  signUpWithPassword: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
 }
 
@@ -106,6 +107,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: error?.message ?? null }
   }, [])
 
+  const signUpWithPassword = React.useCallback(async (email: string, password: string, fullName: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    })
+    return { error: error?.message ?? null }
+  }, [])
+
   const signOut = React.useCallback(async () => {
     await supabase.auth.signOut()
   }, [])
@@ -123,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     hasDepartmentRole,
     refreshProfile,
     signInWithPassword,
+    signUpWithPassword,
     signOut,
   }
 
