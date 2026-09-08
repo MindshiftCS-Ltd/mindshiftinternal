@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { LogoMark, LogoWordmark } from '@/components/brand/Logo'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
@@ -44,10 +43,7 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="items-center text-center">
-          <div className="mb-3 flex size-16 items-center justify-center rounded-2xl border border-border bg-white p-2.5 shadow-sm">
-            <LogoMark className="size-full" />
-          </div>
-          <LogoWordmark className="items-center" />
+          <img src="/brand/logo-vertical.png" alt="Mindshift Consultancy and Services" className="w-40" />
           <CardDescription className="mt-1">Operations &amp; Administration Platform</CardDescription>
         </CardHeader>
         <CardContent>
