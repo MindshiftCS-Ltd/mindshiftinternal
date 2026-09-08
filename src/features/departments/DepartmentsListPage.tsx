@@ -31,7 +31,7 @@ export function DepartmentsListPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {departments.map((dept) => (
             <Link key={dept.id} to={`/departments/${dept.id}`}>
-              <Card className="h-full transition-shadow hover:shadow-md">
+              <Card className="h-52 transition-shadow hover:shadow-md">
                 <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
                   <div className="flex items-start gap-2.5">
                     <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
@@ -43,7 +43,7 @@ export function DepartmentsListPage() {
                     {dept.code}
                   </Badge>
                 </CardHeader>
-                <CardContent className="flex flex-1 flex-col gap-2">
+                <CardContent className="flex flex-1 flex-col gap-2 overflow-hidden pb-6">
                   <p className="line-clamp-2 text-xs text-muted-foreground">{dept.description}</p>
                   <div className="mt-auto flex items-center gap-4 pt-1 text-xs text-muted-foreground">
                     <span>{dept.memberCount} members</span>
