@@ -11,8 +11,8 @@ export function ProtectedRoute() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
-        Loading Mindshift Internal…
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="size-10 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary" />
       </div>
     )
   }
