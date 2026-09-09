@@ -27,8 +27,8 @@ function DepartmentForms({ departmentId, departmentName }: { departmentId: strin
 
   if (!isSupabaseConfigured) {
     return (
-      <div className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_2px_8px_-2px_rgba(16,24,40,0.06)]">
-        <FileText className="size-4 text-muted-foreground" />
+      <div className="flex h-16 items-center gap-3 rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_2px_8px_-2px_rgba(16,24,40,0.06)]">
+        <FileText className="size-4 shrink-0 text-muted-foreground" />
         <div>
           <p className="text-sm font-medium">Leave Request</p>
           <p className="text-xs text-muted-foreground">Requires approval · 4 fields</p>
@@ -58,12 +58,12 @@ function DepartmentForms({ departmentId, departmentName }: { departmentId: strin
       {forms.map((form) => (
         <div
           key={form.id}
-          className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_2px_8px_-2px_rgba(16,24,40,0.06)]"
+          className="flex h-16 items-center gap-3 rounded-xl bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_2px_8px_-2px_rgba(16,24,40,0.06)]"
         >
-          <FileText className="size-4 text-muted-foreground" />
-          <div>
-            <p className="text-sm font-medium">{form.name}</p>
-            <p className="text-xs text-muted-foreground capitalize">
+          <FileText className="size-4 shrink-0 text-muted-foreground" />
+          <div className="min-w-0">
+            <p className="line-clamp-1 text-sm font-medium">{form.name}</p>
+            <p className="line-clamp-1 text-xs text-muted-foreground capitalize">
               {form.status} · {form.requires_approval ? 'Requires approval' : 'No approval required'}
             </p>
           </div>

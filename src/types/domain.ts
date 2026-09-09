@@ -202,6 +202,14 @@ export type Notification = {
   created_at: string
 }
 
+export type OrgSettings = {
+  id: boolean
+  name: string
+  logo_path: string | null
+  updated_by: string | null
+  updated_at: string
+}
+
 export type AuditLog = {
   id: string
   actor_id: string | null

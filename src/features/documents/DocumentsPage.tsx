@@ -53,16 +53,16 @@ export function DocumentsPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {documents.map((doc) => (
-            <Card key={doc.id}>
-              <CardContent className="flex items-start gap-3 py-4">
-                <FileText className="mt-0.5 size-4 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{doc.title}</p>
-                  <p className="text-xs text-muted-foreground">
+            <Card key={doc.id} className="h-20">
+              <CardContent className="flex h-full items-start gap-3 py-4">
+                <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-1 text-sm font-medium">{doc.title}</p>
+                  <p className="line-clamp-1 text-xs text-muted-foreground">
                     {departments.find((d) => d.id === doc.department_id)?.name ?? 'Organisation-wide'}
                   </p>
                 </div>
-                <Badge variant="outline" className="capitalize">
+                <Badge variant="outline" className="shrink-0 capitalize">
                   {doc.access_level}
                 </Badge>
               </CardContent>

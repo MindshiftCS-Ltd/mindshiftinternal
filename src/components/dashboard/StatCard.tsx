@@ -5,7 +5,7 @@ export function StatCard({ label, value, className }: { label: string; value: nu
   return (
     <Card className={cn(className)}>
       <CardContent className="py-5">
-        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</p>
+        <p className="min-h-8 text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</p>
         <p className="mt-2 text-3xl font-bold tracking-tight tabular-nums">{value}</p>
       </CardContent>
     </Card>
